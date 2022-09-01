@@ -1,14 +1,36 @@
 section .data
 acc dd 0
 
-label1 dd 1
-label0 dd 0, 0
+label0 dd 1
 
 section .text
 
 global _start
 
 _start:
+push dword label0
+push dword 1
+call output_call
+add esp, 8
+
+push dword label0
+push dword 1
+call output_call
+add esp, 8
+
+push dword label0
+push dword 1
+call input_call
+add esp, 8
+
+push dword label0
+push dword 1
+call output_call
+add esp, 8
+
+mov eax, 1
+mov ebx, 0
+int 80h
 
 output_call:
   push ebp

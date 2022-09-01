@@ -109,82 +109,101 @@ void translateCode(char* fileNameIn) {
   isInSectionText = true;
   for (unsigned i = 0; i < lineVector.size(); i++) {
     if (isInSectionText == true) {
-      if (isInstruction == 0) {
-        switch (stoi(lineVector.at(i))) {
-          case ADD_OP:
-            cout << "Found an ADD_OP!" << endl;
-            isInstruction++;
-            break;
-          case SUB_OP:
-            cout << "Found an SUB_OP!" << endl;
-            isInstruction++;
-            break;
-          case MULT_OP:
-            cout << "Found an MULT_OP!" << endl;
-            isInstruction++;
-            break;
-          case DIV_OP:
-            cout << "Found an DIV_OP!" << endl;
-            isInstruction++;
-            break;
-          case JMP_OP:
-            cout << "Found an JMP_OP!" << endl;
-            isInstruction++;
-            break;
-          case JMPN_OP:
-            cout << "Found an JMPN_OP!" << endl;
-            isInstruction++;
-            break;
-          case JMPP_OP:
-            cout << "Found an JMPP_OP!" << endl;
-            isInstruction++;
-            break;
-          case JMPZ_OP:
-            cout << "Found an JMPZ_OP!" << endl;
-            isInstruction++;
-            break;
-          case COPY_OP:
-            cout << "Found an COPY_OP!" << endl;
-            isInstruction += 2;
-            break;
-          case LOAD_OP:
-            cout << "Found an LOAD_OP!" << endl;
-            isInstruction++;
-            break;
-          case STORE_OP:
-            cout << "Found an STORE_OP!" << endl;
-            isInstruction++;
-            break;
-          case INPUT_OP:
-            cout << "Found an INPUT_OP!" << endl;
-            isInstruction++;
-            break;
-          case OUTPUT_OP:
-            cout << "Found an OUTPUT_OP!" << endl;
-            isInstruction++;
-            break;
-          case STOP_OP:
-            cout << "Found an STOP_OP!" << endl;
-            isInSectionText = false;
-            break;
-          case S_INPUT_OP:
-            cout << "Found an S_INPUT_OP!" << endl;
-            isInstruction += 2;
-            break;
-          case S_OUTPUT_OP:
-            cout << "Found an S_OUTPUT_OP!" << endl;
-            isInstruction += 2;
-            break;
-          default:
-            break;
-        }
-      } else {
-        cout << "  var = " << lineVector.at(i) << endl;
-        isInstruction--;
+      switch (stoi(lineVector.at(i))) {
+        case ADD_OP:
+          cout << "Found an ADD_OP!" << endl;
+          i++;
+          break;
+        case SUB_OP:
+          cout << "Found an SUB_OP!" << endl;
+          i++;
+          break;
+        case MULT_OP:
+          cout << "Found an MULT_OP!" << endl;
+          i++;
+          break;
+        case DIV_OP:
+          cout << "Found an DIV_OP!" << endl;
+          i++;
+          break;
+        case JMP_OP:
+          cout << "Found an JMP_OP!" << endl;
+          i++;
+          break;
+        case JMPN_OP:
+          cout << "Found an JMPN_OP!" << endl;
+          i++;
+          break;
+        case JMPP_OP:
+          cout << "Found an JMPP_OP!" << endl;
+          i++;
+          break;
+        case JMPZ_OP:
+          cout << "Found an JMPZ_OP!" << endl;
+          i++;
+          break;
+        case COPY_OP:
+          cout << "Found an COPY_OP!" << endl;
+          i += 2;
+          break;
+        case LOAD_OP:
+          cout << "Found an LOAD_OP!" << endl;
+          i++;
+          break;
+        case STORE_OP:
+          cout << "Found an STORE_OP!" << endl;
+          i++;
+          break;
+        case INPUT_OP:
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an input's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "push dword " << tokenFound->second << endl;
+          outputFile << "push dword 1" << endl;
+          outputFile << "call input_call" << endl;
+          outputFile << "add esp, 8" << endl;
+          outputFile << endl;
+          i++;
+          break;
+        case OUTPUT_OP:
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an output's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "push dword " << tokenFound->second << endl;
+          outputFile << "push dword 1" << endl;
+          outputFile << "call output_call" << endl;
+          outputFile << "add esp, 8" << endl;
+          outputFile << endl;
+          i++;
+          break;
+        case STOP_OP:
+          outputFile << "mov eax, 1" << endl;
+          outputFile << "mov ebx, 0" << endl;
+          outputFile << "int 80h" << endl;
+          outputFile << endl;
+          isInSectionText = false;
+          break;
+        case S_INPUT_OP:
+          cout << "Found an S_INPUT_OP!" << endl;
+          i += 2;
+          break;
+        case S_OUTPUT_OP:
+          cout << "Found an S_OUTPUT_OP!" << endl;
+          i += 2;
+          break;
+        default:
+          break;
       }
     }
   }
-  outputFile << endl;
 
   outputFile << "output_call:" << endl;
   outputFile << "  push ebp" << endl;
