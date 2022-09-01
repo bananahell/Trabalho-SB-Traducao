@@ -66,16 +66,17 @@ void translateCode(char* fileNameIn) {
     }
   }
 
+  inputFile.close();
+
+  map<int, string>::iterator it;
   cout << "Label Table" << endl;
-  for (auto const& [key, val] : labelTable) {
-    cout << key << ':' << val << endl;
+  for (it = labelTable.begin(); it != labelTable.end(); ++it) {
+    std::cout << it->first << ':' << it->second << std::endl;
   }
   cout << "Jump Label Table" << endl;
-  for (auto const& [key, val] : jmpLabelTable) {
-    cout << key << ':' << val << endl;
+  for (it = jmpLabelTable.begin(); it != jmpLabelTable.end(); ++it) {
+    std::cout << it->first << ':' << it->second << std::endl;
   }
-
-  inputFile.close();
 
   string extension = fileNameIn;
   extension = extension.substr(extension.find("."));
@@ -86,7 +87,8 @@ void translateCode(char* fileNameIn) {
   map<int, string>::iterator tokenFound;
 
   outputFile << "section .data" << endl;
-  outputFile << "acc dd 0" << endl;
+  outputFile << endl;
+  outputFile << "acc dd 0";
   for (unsigned i = labelTable.begin()->first; i < lineVector.size(); i++) {
     tokenFound = labelTable.find(i);
     if (tokenFound != labelTable.end()) {

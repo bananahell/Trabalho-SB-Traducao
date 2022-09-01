@@ -1,7 +1,7 @@
 section .data
-acc dd 0
 
-label0 dd 1
+acc dd 0
+label0 dd 65
 
 section .text
 
