@@ -109,15 +109,36 @@ void translateCode(char* fileNameIn) {
 
   isInstruction = 0;
   isInSectionText = true;
+  string temp;
   for (unsigned i = 0; i < lineVector.size(); i++) {
     if (isInSectionText == true) {
       switch (stoi(lineVector.at(i))) {
         case ADD_OP:
-          cout << "Found an ADD_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a load's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; ADD " << tokenFound->second << endl;
+          outputFile << "  mov eax, [" << tokenFound->second << "]" << endl;
+          outputFile << "  add [acc], eax" << endl;
+          outputFile << endl;
           i++;
           break;
         case SUB_OP:
-          cout << "Found an SUB_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a load's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; SUB " << tokenFound->second << endl;
+          outputFile << "  mov eax, [" << tokenFound->second << "]" << endl;
+          outputFile << "  sub [acc], eax" << endl;
+          outputFile << endl;
           i++;
           break;
         case MULT_OP:
@@ -145,15 +166,54 @@ void translateCode(char* fileNameIn) {
           i++;
           break;
         case COPY_OP:
-          cout << "Found an COPY_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an input's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; COPY " << tokenFound->second;
+          temp = tokenFound->second;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 2)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an input's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << ", " << tokenFound->second << endl;
+          outputFile << "  mov eax, [" << temp << "]" << endl;
+          outputFile << "  mov [" << tokenFound->second << "], eax" << endl;
+          outputFile << endl;
           i += 2;
           break;
         case LOAD_OP:
-          cout << "Found an LOAD_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a load's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; LOAD " << tokenFound->second << endl;
+          outputFile << "  mov eax, [" << tokenFound->second << "]" << endl;
+          outputFile << "  mov [acc], eax" << endl;
+          outputFile << endl;
           i++;
           break;
         case STORE_OP:
-          cout << "Found an STORE_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a store's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; STORE " << tokenFound->second << endl;
+          outputFile << "  mov eax, [acc]" << endl;
+          outputFile << "  mov [" << tokenFound->second << "], eax" << endl;
+          outputFile << endl;
           i++;
           break;
         case INPUT_OP:
@@ -164,10 +224,11 @@ void translateCode(char* fileNameIn) {
             outputFile.close();
             return;
           }
-          outputFile << "push dword " << tokenFound->second << endl;
-          outputFile << "push dword 1" << endl;
-          outputFile << "call input_call" << endl;
-          outputFile << "add esp, 8" << endl;
+          outputFile << "  ; INPUT " << tokenFound->second << endl;
+          outputFile << "  push dword " << tokenFound->second << endl;
+          outputFile << "  push dword 13" << endl;
+          outputFile << "  call input_call" << endl;
+          outputFile << "  add esp, 8" << endl;
           outputFile << endl;
           i++;
           break;
@@ -179,26 +240,70 @@ void translateCode(char* fileNameIn) {
             outputFile.close();
             return;
           }
-          outputFile << "push dword " << tokenFound->second << endl;
-          outputFile << "push dword 1" << endl;
-          outputFile << "call output_call" << endl;
-          outputFile << "add esp, 8" << endl;
+          outputFile << "  ; OUTPUT " << tokenFound->second << endl;
+          outputFile << "  push dword " << tokenFound->second << endl;
+          outputFile << "  push dword 13" << endl;
+          outputFile << "  call output_call" << endl;
+          outputFile << "  add esp, 8" << endl;
           outputFile << endl;
           i++;
           break;
         case STOP_OP:
-          outputFile << "mov eax, 1" << endl;
-          outputFile << "mov ebx, 0" << endl;
-          outputFile << "int 80h" << endl;
+          outputFile << "  ; STOP" << endl;
+          outputFile << "  mov eax, 1" << endl;
+          outputFile << "  mov ebx, 0" << endl;
+          outputFile << "  int 80h" << endl;
           outputFile << endl;
           isInSectionText = false;
           break;
         case S_INPUT_OP:
-          cout << "Found an S_INPUT_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an input's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; S_INPUT " << tokenFound->second;
+          temp = tokenFound->second;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 2)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an input's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << ", " << tokenFound->second << endl;
+          outputFile << "  push dword " << temp << endl;
+          outputFile << "  push dword [" << tokenFound->second << "]" << endl;
+          outputFile << "  call s_input_call" << endl;
+          outputFile << "  add esp, 8" << endl;
+          outputFile << endl;
           i += 2;
           break;
         case S_OUTPUT_OP:
-          cout << "Found an S_OUTPUT_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an output's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; S_OUTPUT " << tokenFound->second;
+          temp = tokenFound->second;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 2)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find an input's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << ", " << tokenFound->second << endl;
+          outputFile << "  push dword " << temp << endl;
+          outputFile << "  push dword [" << tokenFound->second << "]" << endl;
+          outputFile << "  call s_output_call" << endl;
+          outputFile << "  add esp, 8" << endl;
+          outputFile << endl;
           i += 2;
           break;
         default:
@@ -228,83 +333,28 @@ void translateCode(char* fileNameIn) {
   outputFile << "  int 80h" << endl;
   outputFile << "  pop ebp" << endl;
   outputFile << "  ret" << endl;
-
-  // TODO
-  //
-  // OUTPUT
-  //
-  // output_call:
-  //   push ebp
-  //   mov ebp, esp
-  //   mov eax, 4
-  //   mov ebx, 1
-  //   mov ecx, [ebp + 16]
-  //   mov edx, [ebp + 8]
-  //   int 80h
-  //   pop ebp
-  //   ret
-  //
-  // ...
-  //
-  // push double [<pointer>]
-  // push double [<size>]
-  // call output_call
-  // pop double [<size>]
-  // pop double [<pointer>]
-  //
-  // INPUT
-  //
-  // input_call:
-  //   push ebp
-  //   mov ebp, esp
-  //   mov eax, 3
-  //   mov ebx, 0
-  //   mov ecx, [ebp + 16]
-  //   mov edx, [ebp + 8]
-  //   int 80h
-  //   pop ebp
-  //   ret
-  //
-  // ...
-  //
-  // push double [<pointer>]
-  // push double [<size>]
-  // call input_call
-  // pop double [<size>]
-  // pop double [<pointer>]
-
-  // TODO
-  //
-  // OUTPUT:
-  // mov eax, 4
-  // mov ebx, 1
-  // mov ecx, <pointer>
-  // mov edx, <size>
-  // int 80h
-  //
-  // exemplo
-  //
-  // name_msg db 'Please enter your name: '
-  // NAMESIZE EQU  $-name_msg
-  // mov eax, 4
-  // mov ebx, 1
-  // mov ecx, name_msg
-  // mov edx, NAMESIZE
-  //
-  // INPUT:
-  // mov eax, 3
-  // mov ebx, 0
-  // mov ecx, <pointer>
-  // mov edx, <size>
-  // int 80h
-  //
-  // exemplo
-  //
-  // user_name resb 16
-  // mov eax, 4
-  // mov ebx, 1
-  // mov ecx, user_name
-  // mov edx, 16
+  outputFile << endl;
+  outputFile << "s_output_call:" << endl;
+  outputFile << "  push ebp" << endl;
+  outputFile << "  mov ebp, esp" << endl;
+  outputFile << "  mov eax, 4" << endl;
+  outputFile << "  mov ebx, 1" << endl;
+  outputFile << "  mov ecx, [ebp + 12]" << endl;
+  outputFile << "  mov edx, [ebp + 8]" << endl;
+  outputFile << "  int 80h" << endl;
+  outputFile << "  pop ebp" << endl;
+  outputFile << "  ret" << endl;
+  outputFile << endl;
+  outputFile << "s_input_call:" << endl;
+  outputFile << "  push ebp" << endl;
+  outputFile << "  mov ebp, esp" << endl;
+  outputFile << "  mov eax, 3" << endl;
+  outputFile << "  mov ebx, 0" << endl;
+  outputFile << "  mov ecx, [ebp + 12]" << endl;
+  outputFile << "  mov edx, [ebp + 8]" << endl;
+  outputFile << "  int 80h" << endl;
+  outputFile << "  pop ebp" << endl;
+  outputFile << "  ret" << endl;
 
   outputFile.close();
   cout << "gg!" << endl;
