@@ -1,49 +1,28 @@
 section .data
 
+num_aux db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 acc dd 0
 label0 dd 0
-label1 dd 1
-label2 dd 2
+label1 dd 0
+label2 dd 1
 
 section .text
 
 global _start
 
 _start:
-  ; S_INPUT label0, label1
+  ; INPUT label0
   push dword label0
-  push dword [label1]
-  call s_input_call
-  add esp, 8
+  call input_call
+  add esp, 4
 
-  ; LOAD label0
+  ; COPY label0, label1
   mov eax, [label0]
-  mov [acc], eax
+  mov [label1], eax
 
-  ; MULT label2
-  mov eax, [acc]
-  mov ebx, [label2]
-  imul ebx
-  mov [acc], eax
-
-  ; ADD label2
-  mov eax, [label2]
-  add [acc], eax
-
-  ; DIV label2
-  mov eax, [acc]
-  mov edx, 0
-  mov ebx, [label2]
-  idiv ebx
-  mov [acc], eax
-
-  ; STORE label0
-  mov eax, [acc]
-  mov [label0], eax
-
-  ; S_OUTPUT label0, label1
-  push dword label0
-  push dword [label1]
+  ; S_OUTPUT label1, label2
+  push dword label1
+  push dword [label2]
   call s_output_call
   add esp, 8
 
@@ -68,9 +47,28 @@ input_call:
   mov ebp, esp
   mov eax, 3
   mov ebx, 0
-  mov ecx, [ebp + 12]
-  mov edx, [ebp + 8]
+  mov ecx, num_aux
+  mov edx, 13
   int 80h
+  mov ebx, dword [ebp + 8]
+  mov ebp, 0
+  mov ecx, num_aux
+  mov edx, 10
+ input_loop:
+  cmp byte [ecx], 10
+  je bye_input
+  mov eax, ebp
+  imul edx
+  mov ebp, eax
+  mov edx, [ecx]
+  and edx, 255
+  add ebp, edx
+  mov edx, 10
+  sub ebp, 48
+  add ecx, 1
+  jmp input_loop
+ bye_input:
+  mov dword [ebx], ebp
   pop ebp
   ret
 

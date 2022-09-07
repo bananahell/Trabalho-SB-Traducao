@@ -88,6 +88,7 @@ void translateCode(char* fileNameIn) {
 
   outputFile << "section .data" << endl;
   outputFile << endl;
+  outputFile << "num_aux db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0" << endl;
   outputFile << "acc dd 0";
   for (unsigned i = labelTable.begin()->first; i < lineVector.size(); i++) {
     tokenFound = labelTable.find(i);
@@ -294,9 +295,8 @@ void translateCode(char* fileNameIn) {
           }
           outputFile << "  ; INPUT " << tokenFound->second << endl;
           outputFile << "  push dword " << tokenFound->second << endl;
-          outputFile << "  push dword 13" << endl;
           outputFile << "  call input_call" << endl;
-          outputFile << "  add esp, 8" << endl;
+          outputFile << "  add esp, 4" << endl;
           outputFile << endl;
           i++;
           break;
@@ -391,17 +391,38 @@ void translateCode(char* fileNameIn) {
   outputFile << "  pop ebp" << endl;
   outputFile << "  ret" << endl;
   outputFile << endl;
+
   outputFile << "input_call:" << endl;
   outputFile << "  push ebp" << endl;
   outputFile << "  mov ebp, esp" << endl;
   outputFile << "  mov eax, 3" << endl;
   outputFile << "  mov ebx, 0" << endl;
-  outputFile << "  mov ecx, [ebp + 12]" << endl;
-  outputFile << "  mov edx, [ebp + 8]" << endl;
+  outputFile << "  mov ecx, num_aux" << endl;
+  outputFile << "  mov edx, 13" << endl;
   outputFile << "  int 80h" << endl;
+  outputFile << "  mov ebx, dword [ebp + 8]" << endl;
+  outputFile << "  mov ebp, 0" << endl;
+  outputFile << "  mov ecx, num_aux" << endl;
+  outputFile << "  mov edx, 10" << endl;
+  outputFile << " input_loop:" << endl;
+  outputFile << "  cmp byte [ecx], 10" << endl;
+  outputFile << "  je bye_input" << endl;
+  outputFile << "  mov eax, ebp" << endl;
+  outputFile << "  imul edx" << endl;
+  outputFile << "  mov ebp, eax" << endl;
+  outputFile << "  mov edx, [ecx]" << endl;
+  outputFile << "  and edx, 255" << endl;
+  outputFile << "  add ebp, edx" << endl;
+  outputFile << "  mov edx, 10" << endl;
+  outputFile << "  sub ebp, 48" << endl;
+  outputFile << "  add ecx, 1" << endl;
+  outputFile << "  jmp input_loop" << endl;
+  outputFile << " bye_input:" << endl;
+  outputFile << "  mov dword [ebx], ebp" << endl;
   outputFile << "  pop ebp" << endl;
   outputFile << "  ret" << endl;
   outputFile << endl;
+
   outputFile << "s_output_call:" << endl;
   outputFile << "  push ebp" << endl;
   outputFile << "  mov ebp, esp" << endl;
