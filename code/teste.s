@@ -2,8 +2,8 @@ section .data
 
 acc dd 0
 label0 dd 0
-label2 dd 0
 label1 dd 1
+label2 dd 2
 
 section .text
 
@@ -20,16 +20,25 @@ _start:
   mov eax, [label0]
   mov [acc], eax
 
-  ; ADD label1
-  mov eax, [label1]
+  ; MULT label2
+  mov eax, [acc]
+  mov ebx, [label2]
+  imul ebx
+  mov [acc], eax
+
+  ; ADD label2
+  mov eax, [label2]
   add [acc], eax
 
-  ; STORE label2
+  ; DIV label2
   mov eax, [acc]
-  mov [label2], eax
+  mov edx, 0
+  mov ebx, [label2]
+  idiv ebx
+  mov [acc], eax
 
-  ; COPY label2, label0
-  mov eax, [label2]
+  ; STORE label0
+  mov eax, [acc]
   mov [label0], eax
 
   ; S_OUTPUT label0, label1

@@ -112,12 +112,16 @@ void translateCode(char* fileNameIn) {
   string temp;
   for (unsigned i = 0; i < lineVector.size(); i++) {
     if (isInSectionText == true) {
+      tokenFound = jmpLabelTable.find(i);
+      if (tokenFound != jmpLabelTable.end()) {
+        outputFile << " " << tokenFound->second << ":" << endl;
+      }
       switch (stoi(lineVector.at(i))) {
         case ADD_OP:
           tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find a load's variable" << endl;
+            cout << "Error trying to find an add's variable" << endl;
             outputFile.close();
             return;
           }
@@ -131,7 +135,7 @@ void translateCode(char* fileNameIn) {
           tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find a load's variable" << endl;
+            cout << "Error trying to find a sub's variable" << endl;
             outputFile.close();
             return;
           }
@@ -142,34 +146,98 @@ void translateCode(char* fileNameIn) {
           i++;
           break;
         case MULT_OP:
-          cout << "Found an MULT_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a mult's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; MULT " << tokenFound->second << endl;
+          outputFile << "  mov eax, [acc]" << endl;
+          outputFile << "  mov ebx, [" << tokenFound->second << "]" << endl;
+          outputFile << "  imul ebx" << endl;
+          outputFile << "  mov [acc], eax" << endl;
+          outputFile << endl;
           i++;
           break;
         case DIV_OP:
-          cout << "Found an DIV_OP!" << endl;
+          tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == labelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a div's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; DIV " << tokenFound->second << endl;
+          outputFile << "  mov eax, [acc]" << endl;
+          outputFile << "  mov edx, 0" << endl;
+          outputFile << "  mov ebx, [" << tokenFound->second << "]" << endl;
+          outputFile << "  idiv ebx" << endl;
+          outputFile << "  mov [acc], eax" << endl;
+          outputFile << endl;
           i++;
           break;
         case JMP_OP:
-          cout << "Found an JMP_OP!" << endl;
+          tokenFound = jmpLabelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == jmpLabelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a jmp's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; JMP " << tokenFound->second << endl;
+          outputFile << "  jmp " << tokenFound->second << endl;
+          outputFile << endl;
           i++;
           break;
         case JMPN_OP:
-          cout << "Found an JMPN_OP!" << endl;
+          tokenFound = jmpLabelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == jmpLabelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a jmpn's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; JMPN " << tokenFound->second << endl;
+          outputFile << "  cmp dword [acc], 0" << endl;
+          outputFile << "  jl " << tokenFound->second << endl;
+          outputFile << endl;
           i++;
           break;
         case JMPP_OP:
-          cout << "Found an JMPP_OP!" << endl;
+          tokenFound = jmpLabelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == jmpLabelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a jmpp's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; JMPP " << tokenFound->second << endl;
+          outputFile << "  cmp dword [acc], 0" << endl;
+          outputFile << "  jg " << tokenFound->second << endl;
+          outputFile << endl;
           i++;
           break;
         case JMPZ_OP:
-          cout << "Found an JMPZ_OP!" << endl;
+          tokenFound = jmpLabelTable.find(stoi(lineVector.at(i + 1)));
+          if (tokenFound == jmpLabelTable.end()) {
+            cout << "Something went reaaaally wrong..." << endl;
+            cout << "Error trying to find a jmpz's variable" << endl;
+            outputFile.close();
+            return;
+          }
+          outputFile << "  ; JMPZ " << tokenFound->second << endl;
+          outputFile << "  cmp dword [acc], 0" << endl;
+          outputFile << "  je " << tokenFound->second << endl;
+          outputFile << endl;
           i++;
           break;
         case COPY_OP:
           tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find an input's variable" << endl;
+            cout << "Error trying to find a copy's variable" << endl;
             outputFile.close();
             return;
           }
@@ -178,7 +246,7 @@ void translateCode(char* fileNameIn) {
           tokenFound = labelTable.find(stoi(lineVector.at(i + 2)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find an input's variable" << endl;
+            cout << "Error trying to find a copy's variable" << endl;
             outputFile.close();
             return;
           }
@@ -260,7 +328,7 @@ void translateCode(char* fileNameIn) {
           tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find an input's variable" << endl;
+            cout << "Error trying to find a s_input's variable" << endl;
             outputFile.close();
             return;
           }
@@ -269,7 +337,7 @@ void translateCode(char* fileNameIn) {
           tokenFound = labelTable.find(stoi(lineVector.at(i + 2)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find an input's variable" << endl;
+            cout << "Error trying to find a s_input's variable" << endl;
             outputFile.close();
             return;
           }
@@ -285,7 +353,7 @@ void translateCode(char* fileNameIn) {
           tokenFound = labelTable.find(stoi(lineVector.at(i + 1)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find an output's variable" << endl;
+            cout << "Error trying to find a s_output's variable" << endl;
             outputFile.close();
             return;
           }
@@ -294,7 +362,7 @@ void translateCode(char* fileNameIn) {
           tokenFound = labelTable.find(stoi(lineVector.at(i + 2)));
           if (tokenFound == labelTable.end()) {
             cout << "Something went reaaaally wrong..." << endl;
-            cout << "Error trying to find an input's variable" << endl;
+            cout << "Error trying to find a s_input's variable" << endl;
             outputFile.close();
             return;
           }
