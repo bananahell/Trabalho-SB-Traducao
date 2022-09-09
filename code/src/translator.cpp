@@ -69,10 +69,12 @@ void translateCode(char* fileNameIn) {
   inputFile.close();
 
   map<int, string>::iterator it;
+  cout << endl;
   cout << "Label Table" << endl;
   for (it = labelTable.begin(); it != labelTable.end(); ++it) {
     std::cout << it->first << ':' << it->second << std::endl;
   }
+  cout << endl;
   cout << "Jump Label Table" << endl;
   for (it = jmpLabelTable.begin(); it != jmpLabelTable.end(); ++it) {
     std::cout << it->first << ':' << it->second << std::endl;
@@ -108,7 +110,6 @@ void translateCode(char* fileNameIn) {
   outputFile << endl;
   outputFile << "_start:" << endl;
 
-  isInstruction = 0;
   isInSectionText = true;
   string temp;
   for (unsigned i = 0; i < lineVector.size(); i++) {
@@ -295,8 +296,9 @@ void translateCode(char* fileNameIn) {
           }
           outputFile << "  ; INPUT " << tokenFound->second << endl;
           outputFile << "  push dword " << tokenFound->second << endl;
+          outputFile << "  push dword num_aux" << endl;
           outputFile << "  call input_call" << endl;
-          outputFile << "  add esp, 4" << endl;
+          outputFile << "  add esp, 8" << endl;
           outputFile << endl;
           i++;
           break;
@@ -397,12 +399,11 @@ void translateCode(char* fileNameIn) {
   outputFile << "  mov ebp, esp" << endl;
   outputFile << "  mov eax, 3" << endl;
   outputFile << "  mov ebx, 0" << endl;
-  outputFile << "  mov ecx, num_aux" << endl;
+  outputFile << "  mov ecx, [ebp + 8]" << endl;
   outputFile << "  mov edx, 13" << endl;
   outputFile << "  int 80h" << endl;
-  outputFile << "  mov ebx, dword [ebp + 8]" << endl;
+  outputFile << "  mov ebx, dword [ebp + 12]" << endl;
   outputFile << "  mov ebp, 0" << endl;
-  outputFile << "  mov ecx, num_aux" << endl;
   outputFile << "  mov edx, 10" << endl;
   outputFile << " input_loop:" << endl;
   outputFile << "  cmp byte [ecx], 10" << endl;
@@ -446,6 +447,7 @@ void translateCode(char* fileNameIn) {
   outputFile << "  ret" << endl;
 
   outputFile.close();
+  cout << endl;
   cout << "gg!" << endl;
   return;
 }
