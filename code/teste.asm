@@ -1,3 +1,8 @@
+; Esse assembly eh realmente para testar, na mao
+; As saidas do projeto tem extensão .s
+
+
+
 section .data
 
 acc dd 0
